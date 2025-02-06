@@ -92,7 +92,7 @@ def extract(cal_path, pubdate_cache):
     return extracted
 
 
-def row2event(r, out, pubdate_cache):
+def row2event(r, out):
     e = {}
     e['SUMMARY'] = r['Event']
     e['DTSTAMP'] = r['dtstamp'].strftime('%Y%m%dT%H%M%SZ')
@@ -129,7 +129,7 @@ ITEM_TEMPLATE = """<item>
 """
 
 
-def row2feeditem(row, out, pubdate_cache):
+def row2feeditem(row, out):
     contact = f"<a href=\"{row['url']}\">Website</a>. " if 'url' in row else ""
     contact += row['Contact Address']
     tpl_data = {
@@ -143,14 +143,14 @@ def row2feeditem(row, out, pubdate_cache):
     out.write(ITEM_TEMPLATE.format(**tpl_data))
 
 
-def write_ical(events, writer, pubdate_cache):
+def write_ical(events, writer):
     writer.write('BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:egf2ical\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n')
     writer.write('X-WR-CALNAME:EGF Tournaments\r\nX-WR-TIMEZONE:Europe/Belgrade\r\n')
     for e in events:
-        row2event(e, writer, pubdate_cache)
+        row2event(e, writer)
     writer.write('END:VCALENDAR')
 
-def write_rss(events, f, pubdate_cache):
+def write_rss(events, f):
     f.write('<?xml version="1.0" encoding="UTF-8" ?>\n')
     f.write('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">')
     f.write('<channel>')
@@ -160,7 +160,7 @@ def write_rss(events, f, pubdate_cache):
     f.write('<atom:link href="http://li1418-60.members.linode.com/egf-calendar.rss" rel="self" type="application/rss+xml" />')
     f.write('<ttl>600</ttl>\n')
     for e in events:
-        row2feeditem(e, f, pubdate_cache)
+        row2feeditem(e, f)
     f.write('</channel></rss>')
 
 def main():
@@ -173,9 +173,9 @@ def main():
         pubdate_cache = {}
     events = extract(HTML_PATH, pubdate_cache)
     with open(ICAL_PATH, 'w') as f:
-        write_ical(events, f, pubdate_cache)
+        write_ical(events, f)
     with open(RSS_PATH, 'w') as f:
-        write_rss(events, f, pubdate_cache)
+        write_rss(events, f)
     with open(JSON_PATH, 'w') as f:
         json.dump({k: v.isoformat() for k, v in pubdate_cache.items()}, f)
 
